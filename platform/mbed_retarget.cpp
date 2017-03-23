@@ -783,12 +783,13 @@ extern "C" caddr_t _sbrk(int incr) {
     unsigned char*        prev_heap = heap;
     unsigned char*        new_heap = heap + incr;
 
+
 #if defined(TARGET_ARM7)
     if (new_heap >= stack_ptr) {
 #elif defined(TARGET_CORTEX_A)
     if (new_heap >= (unsigned char*)&__HeapLimit) {     /* __HeapLimit is end of heap section */
 #else
-    if (new_heap >= (unsigned char*)__get_MSP()) {
+    if (new_heap >= (unsigned char*)0x20018000) {
 #endif
         errno = ENOMEM;
         return (caddr_t)-1;

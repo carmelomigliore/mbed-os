@@ -665,7 +665,8 @@
 #elif (defined(TARGET_STM32L476RG) || defined(TARGET_STM32L486RG))
 
 #ifndef INITIAL_SP
-#define INITIAL_SP              (0x20018000UL)
+//#define INITIAL_SP              (0x20018000UL)
+#define INITIAL_SP              (0x10000188UL)
 #endif
 #ifndef OS_TASKCNT
 #define OS_TASKCNT              14

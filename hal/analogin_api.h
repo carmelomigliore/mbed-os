@@ -60,6 +60,9 @@ uint16_t analogin_read_u16(analogin_t *obj);
 
 /**@}*/
 
+// added **************************************************************************
+void fast_adc_read(analogin_t *obj, uint16_t* dest, uint32_t samples,  int freq);
+
 #ifdef __cplusplus
 }
 #endif

@@ -449,7 +449,9 @@ uint32_t mbed_stack_isr_size = 0;
     #elif defined(__GNUC__)
         extern uint32_t         __end__[];
         #define HEAP_START      ((unsigned char*)__end__)
-        #define HEAP_SIZE       ((uint32_t)((uint32_t)INITIAL_SP - (uint32_t)HEAP_START))
+//       #define HEAP_SIZE       ((uint32_t)((uint32_t)INITIAL_SP - (uint32_t)HEAP_START))
+		#define HEAP_SIZE 		(unsigned char*)0x20018000 - HEAP_START
+//		#define HEAP_SIZE 0x115C8
     #endif
 #endif
 

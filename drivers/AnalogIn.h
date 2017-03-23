@@ -87,6 +87,15 @@ public:
         return ret;
     }
 
+
+    //added ***************************************************************
+    void fast_read(uint16_t* dest, uint32_t samples, int freq){
+    	lock();
+    	fast_adc_read(&_adc, dest, samples, freq);
+    	unlock();
+    }
+
+
     /** An operator shorthand for read()
      *
      * The float() operator can be used as a shorthand for read() to simplify common code sequences

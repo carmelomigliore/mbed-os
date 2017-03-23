@@ -67,11 +67,10 @@ void analogin_init(analogin_t *obj, PinName pin)
         // Enable ADC clock
         __HAL_RCC_ADC_CLK_ENABLE();
         __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
-
         AdcHandle.Instance = (ADC_TypeDef *)(obj->adc);
 
         // Configure ADC
-        AdcHandle.Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;          // Asynchronous clock mode, input ADC clock
+        AdcHandle.Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV1;          // Asynchronous clock mode, input ADC clock
         AdcHandle.Init.Resolution            = ADC_RESOLUTION_12B;
         AdcHandle.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
         AdcHandle.Init.ScanConvMode          = DISABLE;                       // Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1)
@@ -163,7 +162,8 @@ static inline uint16_t adc_read(analogin_t *obj)
     }
 
     sConfig.Rank         = ADC_REGULAR_RANK_1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
+    //sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
     sConfig.SingleDiff   = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
     sConfig.Offset       = 0;
@@ -193,5 +193,104 @@ float analogin_read(analogin_t *obj)
     uint16_t value = adc_read(obj);
     return (float)value * (1.0f / (float)0xFFF); // 12 bits range
 }
+
+
+inline void fast_adc_read(analogin_t *obj, uint16_t* dest, uint32_t samples, int freq)
+{
+    ADC_ChannelConfTypeDef sConfig = {0};
+
+    AdcHandle.Instance = (ADC_TypeDef *)(obj->adc);
+
+    // Configure ADC channel
+    switch (obj->channel) {
+        case 0:
+            sConfig.Channel = ADC_CHANNEL_VREFINT;
+            break;
+        case 1:
+            sConfig.Channel = ADC_CHANNEL_1;
+            break;
+        case 2:
+            sConfig.Channel = ADC_CHANNEL_2;
+            break;
+        case 3:
+            sConfig.Channel = ADC_CHANNEL_3;
+            break;
+        case 4:
+            sConfig.Channel = ADC_CHANNEL_4;
+            break;
+        case 5:
+            sConfig.Channel = ADC_CHANNEL_5;
+            break;
+        case 6:
+            sConfig.Channel = ADC_CHANNEL_6;
+            break;
+        case 7:
+            sConfig.Channel = ADC_CHANNEL_7;
+            break;
+        case 8:
+            sConfig.Channel = ADC_CHANNEL_8;
+            break;
+        case 9:
+            sConfig.Channel = ADC_CHANNEL_9;
+            break;
+        case 10:
+            sConfig.Channel = ADC_CHANNEL_10;
+            break;
+        case 11:
+            sConfig.Channel = ADC_CHANNEL_11;
+            break;
+        case 12:
+            sConfig.Channel = ADC_CHANNEL_12;
+            break;
+        case 13:
+            sConfig.Channel = ADC_CHANNEL_13;
+            break;
+        case 14:
+            sConfig.Channel = ADC_CHANNEL_14;
+            break;
+        case 15:
+            sConfig.Channel = ADC_CHANNEL_15;
+            break;
+        case 16:
+            sConfig.Channel = ADC_CHANNEL_16;
+            break;
+        case 17:
+            sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+            break;
+        case 18:
+            sConfig.Channel = ADC_CHANNEL_VBAT;
+            break;
+        default:
+            return;
+    }
+
+    sConfig.Rank         = ADC_REGULAR_RANK_1;
+   // sConfig.SamplingTime = ADC_SAMPLETIME_47CYCLES_5;
+    sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    sConfig.Offset       = 0;
+
+    HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
+
+    uint16_t temp;
+
+    for (int i=0; i<samples; i++){
+
+    	HAL_ADC_Start(&AdcHandle); // Start conversion
+
+    	// Wait end of conversion and get value
+    	if (HAL_ADC_PollForConversion(&AdcHandle, 10) == HAL_OK) {
+    		dest[i]=HAL_ADC_GetValue(&AdcHandle);
+    		if(freq!=0){
+    			wait_us(freq);
+    		}
+    	//	dest[i]=((temp << 4) & (uint16_t)0xFFF0) | ((temp >> 8) & (uint16_t)0x000F);
+    	} else {
+    		dest[i]=-1;
+    	}
+    }
+}
+
 
 #endif
